@@ -3,6 +3,7 @@ from rest_framework.exceptions import ValidationError
 
 
 class CustomListModelMixin:
+    """Добавляет пагинацию к переданному queryset"""
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
         if len(queryset) == 0:
@@ -17,6 +18,12 @@ class CustomListModelMixin:
 
 
 class UnknownKeysValidatiorMixin:
+    """Реализует validete метод сериализатора
+
+    validate(self, attr):
+        Выбрасывет ошибку, если в переданных данных содержатся
+        поля не указанные в сериализаторе.
+    """
     def validate(self, attr):
         if hasattr(self, 'initial_data'):
             unknown_keys = set(self.initial_data.keys()) - set(self.fields.keys())

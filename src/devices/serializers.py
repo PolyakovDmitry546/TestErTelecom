@@ -50,6 +50,11 @@ class OutTechPlaceSerializer(serializers.ModelSerializer):
 
 
 class InputObjectSerializer(serializers.Serializer):
+    """Универсальный входной сериализатор. Определяет класс
+        переданного объекта по его содержимому.
+
+        Возможные классы определены в object_schemas.
+    """
     name = serializers.CharField(max_length=200)
     parent_device_id = serializers.IntegerField(
         required=False, allow_null=True)
@@ -81,6 +86,9 @@ class InputObjectSerializer(serializers.Serializer):
 
 
 class OutputObjectSerializer(serializers.ModelSerializer):
+    """Универсальный выходной сериализатор.
+    Создается исходя из переданной модели
+    """
     class Meta:
         fields = '__all__'
 
@@ -89,6 +97,12 @@ class OutputObjectSerializer(serializers.ModelSerializer):
         return super().__new__(cls, *args, **kwargs)
 
     def get_fields(self):
+        """Return the dict of field names -> field instances that
+          should be used for self.fields when instantiating the serializer.
+
+          Создает множество self.fk_names содержащее имена полей, которые
+          являются внешними ключами.
+        """
         fields = super().get_fields()
         self.fk_names = set()
         for field in fields.items():
@@ -97,6 +111,11 @@ class OutputObjectSerializer(serializers.ModelSerializer):
         return fields
 
     def to_representation(self, instance):
+        """Object instance -> Dict of primitive datatypes.
+
+        Добавляет постфикс _id к полям содержащимся в self.fk_names,
+        если глубина сериализации не указана или равна 0.
+        """
         fields = super().to_representation(instance)
         if not hasattr(self.Meta, 'depth') or self.Meta.depth == 0:
             ret = OrderedDict()

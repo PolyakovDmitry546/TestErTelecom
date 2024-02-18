@@ -18,6 +18,11 @@ from devices.services import CreationService
 
 
 class CreateObjectAPIView(APIView):
+    """Содержит реализацию POST запроса который:
+        принимает на вход JSON объект. Если найден объект с идентичным
+        содержимым, возвращает сериализованный объект из базы (с его id),
+        иначе добавляет объект в базу и так же возвращает созданный объект.
+    """
     def post(self, request: Request):
         serializer = InputObjectSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -34,6 +39,12 @@ class CreateObjectAPIView(APIView):
 
 
 class CustomListAPIView(CustomListModelMixin, GenericAPIView):
+    """Содержит реализацию GET запроса который:
+        принимает на вход JSON объект (не обязательно). Если найдено
+        совпадение по переданным полям, то выводит сериализованный объект.
+        Ecли совпаденией не найденно возвращает пустой объект.
+        Если не передано ничего, выводит список всех объектов модели.
+    """
     def get_in_serializer(self):
         return self.input_serializer
 
@@ -44,6 +55,8 @@ class CustomListAPIView(CustomListModelMixin, GenericAPIView):
         return self.model
 
     def get_queryset(self):
+        """Если запрос не содержит даннх, возвращет все объекты модели.
+        """
         if not self.request.data:
             return self.get_model().objects.all()
         serializer = self.get_in_serializer()(data=self.request.data)
