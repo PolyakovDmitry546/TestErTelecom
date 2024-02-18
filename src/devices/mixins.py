@@ -6,7 +6,7 @@ class CustomListModelMixin:
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
         if len(queryset) == 0:
-            return Response()
+            return Response({})
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.get_out_serializer()(page, many=True)
