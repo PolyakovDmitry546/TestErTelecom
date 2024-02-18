@@ -1,7 +1,46 @@
 from collections import OrderedDict
+
 from rest_framework import serializers
+from devices.mixins import UnknownKeysValidatiorMixin
 
 from devices.models import Device, DeviceType, TechPlace
+
+
+class InDeviceSerializer(UnknownKeysValidatiorMixin, serializers.Serializer):
+    name = serializers.CharField(max_length=200, required=False)
+    parent_device_id = serializers.IntegerField(required=False)
+    type_id = serializers.IntegerField(required=False)
+    created_at = serializers.DateField(required=False)
+    tech_place_id = serializers.IntegerField(required=False)
+
+
+class OutDeviceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Device
+        fields = '__all__'
+        depth = 1
+
+
+class InDeviceTypeSerializer(UnknownKeysValidatiorMixin, serializers.Serializer):
+    name = serializers.CharField(max_length=200, required=False)
+
+
+class OutDeviceTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DeviceType
+        fields = '__all__'
+
+
+class InTechPlaceSerializer(UnknownKeysValidatiorMixin, serializers.Serializer):
+    name = serializers.CharField(max_length=200, required=False)
+    latitude = serializers.FloatField(required=False)
+    longitude = serializers.FloatField(required=False)
+
+
+class OutTechPlaceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TechPlace
+        fields = '__all__'
 
 
 class InputObjectSerializer(serializers.Serializer):
