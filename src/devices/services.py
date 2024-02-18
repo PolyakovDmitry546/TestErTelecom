@@ -10,13 +10,3 @@ class CreationService():
         if object is None:
             object = self.model.objects.create(**data)
         return object
-
-
-class CreationServiceFactroy:
-    @staticmethod
-    def get(model: models.Model):
-        classes = {}
-        if model in classes:
-            return classes[model]()
-
-        return CreationService(model)

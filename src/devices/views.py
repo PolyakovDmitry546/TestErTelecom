@@ -14,26 +14,23 @@ from devices.serializers import (
     InTechPlaceSerializer, InputObjectSerializer, OutDeviceSerializer,
     OutDeviceTypeSerializer, OutTechPlaceSerializer, OutputObjectSerializer
 )
-from devices.services import CreationService, CreationServiceFactroy
+from devices.services import CreationService
 
 
 class CreateObjectAPIView(APIView):
     def post(self, request: Request):
         serializer = InputObjectSerializer(data=request.data)
-        if serializer.is_valid():
-            model = serializer.validated_data.get('__model_type')
-            service: CreationService = CreationServiceFactroy.get(model)
-            try:
-                object_ = service.get_or_create(serializer.data)
-            except IntegrityError as e:
-                return Response(data=e.args,
-                                status=status.HTTP_400_BAD_REQUEST)
-            out_serializer = OutputObjectSerializer(object_)
-            return Response(data=out_serializer.data,
-                            status=status.HTTP_200_OK)
-        else:
-            return Response(data=serializer.errors,
+        serializer.is_valid(raise_exception=True)
+        model = serializer.validated_data.pop('__model_type')
+        service = CreationService(model)
+        try:
+            object_ = service.get_or_create(serializer.validated_data)
+        except IntegrityError as e:
+            return Response(data=e.args,
                             status=status.HTTP_400_BAD_REQUEST)
+        out_serializer = OutputObjectSerializer(object_)
+        return Response(data=out_serializer.data,
+                        status=status.HTTP_200_OK)
 
 
 class CustomListAPIView(CustomListModelMixin, GenericAPIView):

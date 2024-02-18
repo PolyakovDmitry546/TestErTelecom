@@ -51,23 +51,32 @@ class OutTechPlaceSerializer(serializers.ModelSerializer):
 
 class InputObjectSerializer(serializers.Serializer):
     name = serializers.CharField(max_length=200)
-    parent_device_id = serializers.IntegerField(required=False)
+    parent_device_id = serializers.IntegerField(
+        required=False, allow_null=True)
     type_id = serializers.IntegerField(required=False)
     created_at = serializers.DateField(required=False)
-    tech_place_id = serializers.IntegerField(required=False)
+    tech_place_id = serializers.IntegerField(
+        required=False, allow_null=True)
     latitude = serializers.FloatField(required=False)
     longitude = serializers.FloatField(required=False)
 
+    object_schemas = {
+        frozenset(('name', 'parent_device_id', 'type_id',
+                   'created_at', 'tech_place_id')): Device,
+        frozenset(('name', 'parent_device_id', 'type_id',
+                   'tech_place_id')): Device,
+        frozenset(('name', 'latitude', 'longitude')): TechPlace,
+        frozenset(('name',)): DeviceType
+    }
+
     def to_internal_value(self, data):
         validated_data = super().to_internal_value(data)
-        if set(('name', 'parent_device_id', 'type_id', 'created_at', 'tech_place_id')) == validated_data.keys():
-            validated_data['__model_type'] = Device
-        elif set(('name', 'latitude', 'longitude')) == validated_data.keys():
-            validated_data['__model_type'] = TechPlace
-        elif set(('name',)) == validated_data.keys():
-            validated_data['__model_type'] = DeviceType
+        keys = frozenset(validated_data.keys())
+        if keys in self.object_schemas:
+            validated_data['__model_type'] = self.object_schemas[keys]
         else:
-            raise serializers.ValidationError({'error': 'Object of unknown type was passed'})
+            raise serializers.ValidationError(
+                {'error': 'Object of unknown type was passed'})
         return validated_data
 
 
