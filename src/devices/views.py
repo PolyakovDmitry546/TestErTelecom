@@ -5,13 +5,14 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.generics import GenericAPIView
+from rest_framework.mixins import UpdateModelMixin
 
 from devices.mixins import CustomListModelMixin
 from devices.models import Device, DeviceType, TechPlace
 from devices.serializers import (
-    InDeviceSerializer, InDeviceTypeSerializer, InTechPlaceSerializer,
-    InputObjectSerializer, OutDeviceSerializer, OutDeviceTypeSerializer,
-    OutTechPlaceSerializer, OutputObjectSerializer
+    DeviceSerializer, InDeviceSerializer, InDeviceTypeSerializer,
+    InTechPlaceSerializer, InputObjectSerializer, OutDeviceSerializer,
+    OutDeviceTypeSerializer, OutTechPlaceSerializer, OutputObjectSerializer
 )
 from devices.services import CreationService, CreationServiceFactroy
 
@@ -74,3 +75,23 @@ class TechPlaceListAPIView(CustomListAPIView):
     input_serializer = InTechPlaceSerializer
     output_seializer = OutTechPlaceSerializer
     model = TechPlace
+
+
+class CustomUpdateView(UpdateModelMixin, GenericAPIView):
+    def post(self, request, *args, **kwargs):
+        return self.partial_update(request, *args, **kwargs)
+
+
+class DeviceUpdateAPIView(CustomUpdateView):
+    serializer_class = DeviceSerializer
+    queryset = Device.objects.all()
+
+
+class DeviceTypeUpdateAPIView(CustomUpdateView):
+    serializer_class = OutDeviceTypeSerializer
+    queryset = DeviceType.objects.all()
+
+
+class TechPlaceUpdateAPIView(CustomUpdateView):
+    serializer_class = OutTechPlaceSerializer
+    queryset = TechPlace.objects.all()

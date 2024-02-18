@@ -21,6 +21,12 @@ class OutDeviceSerializer(serializers.ModelSerializer):
         depth = 1
 
 
+class DeviceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Device
+        fields = '__all__'
+
+
 class InDeviceTypeSerializer(UnknownKeysValidatiorMixin, serializers.Serializer):
     name = serializers.CharField(max_length=200, required=False)
 
