@@ -1,4 +1,9 @@
+import csv
+
 from django.db import IntegrityError
+from django.http import HttpRequest, HttpResponse
+from django.shortcuts import get_object_or_404
+from django.views.generic import View
 
 from rest_framework import status
 from rest_framework.request import Request
@@ -105,3 +110,42 @@ class DeviceTypeUpdateAPIView(CustomUpdateView):
 class TechPlaceUpdateAPIView(CustomUpdateView):
     serializer_class = OutTechPlaceSerializer
     queryset = TechPlace.objects.all()
+
+
+class BaseCSVView(View):
+    """Возвращает ответ в виде .csv файла, содержащий записи
+      модели self.model по переданному ключу pk.
+    """
+    def get(self, request: HttpRequest, *args, **kwargs):
+        pk = kwargs['pk']
+        model = self.model
+        serializer_class = self.serializer_class
+        object = get_object_or_404(model, pk=pk)
+
+        response = HttpResponse(
+            content_type="text/csv",
+            headers={"Content-Disposition": 'attachment;' +
+                     f'filename="{model.__name__}_{object.pk}.csv"'},
+        )
+
+        serializer = serializer_class(object)
+        writer = csv.writer(response)
+        writer.writerow(serializer.data.keys())
+        writer.writerow(serializer.data.values())
+
+        return response
+
+
+class DeviceCSVView(BaseCSVView):
+    model = Device
+    serializer_class = DeviceSerializer
+
+
+class DeviceTypeCSVView(BaseCSVView):
+    model = DeviceType
+    serializer_class = OutDeviceTypeSerializer
+
+
+class TechPlaceCSVView(BaseCSVView):
+    model = TechPlace
+    serializer_class = OutTechPlaceSerializer
